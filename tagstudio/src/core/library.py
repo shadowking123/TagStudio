@@ -1169,11 +1169,7 @@ class Library:
 			yield (i, id)
 		for d in deleted:
 			self.missing_files.remove(d)
-
-	def remove_missing_matches(self, fixed_indices: list[int]):
-		"""Removes a list of fixed Entry indices from the internal missing_matches list."""
-		for i in fixed_indices:
-			del self.missing_matches[i]
+   
 
 	def fix_missing_files(self):
 		"""
@@ -1384,6 +1380,7 @@ class Library:
 
 		if query:
 			# start_time = time.time()
+
 			query: str = query.strip().lower()
 			query_words: list[str] = query.split(' ')
 			all_tag_terms: list[str] = []
@@ -1392,6 +1389,8 @@ class Library:
 			only_missing: bool = True if 'missing' in query or 'no file' in query else False
 			allow_adv: bool = True if 'filename:' in query_words else False
 			tag_only: bool = True if 'tag_id:' in query_words else False
+			is_ignore:bool = True if query.startswith("!") else False
+			print("is ignore" , is_ignore)
 			if allow_adv:
 				query_words.remove('filename:')
 			if tag_only:
@@ -1453,7 +1452,10 @@ class Library:
 				elif only_missing:
 					if os.path.normpath(f'{self.library_dir}/{entry.path}/{entry.filename}') in self.missing_files:
 						results.append((ItemType.ENTRY, entry.id))
-
+				elif is_ignore:
+					if (query.split("!")[1]) not in entry.filename:
+						print("file is removed from query!", entry.filename)
+						results.append((ItemType.ENTRY,entry.id))
 				# elif query == "archived":
 				#     if entry.tags and self._tag_names_to_tag_id_map[self.archived_word.lower()][0] in entry.tags:
 				#         self.filtered_file_list.append(file)
